@@ -29,6 +29,7 @@ import { nip19 } from 'nostr-tools';
   const nostrClient = await NostrClient.initialize();
 
   const dwhiteCodesNpub = new npub(targetNpub);
+  const dwhiteCodesSecretKey = nip19.decode(targetNsec).data as string;
 
   const loadPostsExample = async () => {
     const posts = await nostrClient.getLongformPosts(dwhiteCodesNpub);
@@ -37,8 +38,13 @@ import { nip19 } from 'nostr-tools';
 
   const submitPostExample = async () => {
     const newPost = LongformPost.fromNew(dwhiteCodesNpub, 'A real post', 'Yes, an actual post', 'This time, every bit of the post is real and is definitely not just a test');
-    const secretKey = nip19.decode(targetNsec).data as string;
-    const results = await nostrClient.submitLongformPost(newPost, secretKey);
+    const results = await nostrClient.submitLongformPost(newPost, dwhiteCodesSecretKey);
+    console.log('submit results', results);
+  };
+
+  const editPostExample = async () => {
+    const existingPost = LongformPost.fromEdit('1691864233600', dwhiteCodesNpub, 'Still a real post', 'Real, but edited', 'Ideally (per spec), relays and clients will treat this as an edit and not a new post');
+    const results = await nostrClient.submitLongformPost(existingPost, dwhiteCodesSecretKey);
     console.log('submit results', results);
   };
 

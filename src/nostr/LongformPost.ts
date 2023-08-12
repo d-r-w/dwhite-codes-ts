@@ -12,14 +12,14 @@ class LongformPost {
   public readonly unsignedEvent: UnsignedEvent;
   public readonly summary: string|undefined;
 
-  private constructor(publisher: npub, content: string, publishedAt: number|null = Math.floor(Date.now() / 1000), title: string = 'Untitled Post', summary?: string) {
+  private constructor(publisher: npub, content: string, publishedAt: number|null = Math.floor(Date.now() / 1000), title: string = 'Untitled Post', summary?: string, postID?: string|null) {
     this.publisher = publisher;
     this.title = title;
     this.content = content;
     this.publishedAt = publishedAt ?? Math.floor(Date.now() / 1000);
     this.tags = [
       ['title', title],
-      ['d', String(Date.now())],
+      ['d', postID ?? String(Date.now())],
       ['published_at', String(this.publishedAt)]
     ];
     if(summary) {
@@ -49,6 +49,10 @@ class LongformPost {
 
   public static fromNew(publisher: npub, title: string, summary: string, content: string): LongformPost {
     return new LongformPost(publisher, content, null, title, summary);
+  }
+
+  public static fromEdit(postID: string, publisher: npub, title: string, summary: string, content: string) {
+    return new LongformPost(publisher, content, null, title, summary, postID);
   }
 }
 
