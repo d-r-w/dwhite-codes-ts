@@ -18,7 +18,9 @@ class LongformPost {
     this.content = content;
     this.publishedAt = publishedAt ?? Math.floor(Date.now() / 1000);
     this.tags = [
-      ['title', title]
+      ['title', title],
+      ['d', String(Date.now())],
+      ['published_at', String(this.publishedAt)]
     ];
     if(summary) {
       this.tags.push(['summary', summary]);
