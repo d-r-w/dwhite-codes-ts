@@ -12,7 +12,7 @@ class LongformPost {
   public readonly unsignedEvent: UnsignedEvent;
   public readonly summary: string|undefined;
 
-  constructor(publisher: npub, content: string, publishedAt: number = Math.floor(Date.now() / 1000), title: string = 'Untitled Post', summary?: string) {
+  private constructor(publisher: npub, content: string, publishedAt: number|null = Math.floor(Date.now() / 1000), title: string = 'Untitled Post', summary?: string) {
     this.publisher = publisher;
     this.title = title;
     this.content = content;
@@ -43,6 +43,10 @@ class LongformPost {
     const summary = tagMap.get('summary');
 
     return new LongformPost(publisher, event.content, event.created_at, title, summary);
+  }
+
+  public static fromNew(publisher: npub, title: string, summary: string, content: string): LongformPost {
+    return new LongformPost(publisher, content, null, title, summary);
   }
 }
 

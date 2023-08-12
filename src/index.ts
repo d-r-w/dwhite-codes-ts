@@ -27,15 +27,20 @@ import { nip19 } from 'nostr-tools';
   const app = express();
 
   const nostrClient = await NostrClient.initialize();
+
   const dwhiteCodesNpub = new npub(targetNpub);
-  const posts = await nostrClient.getLongformPosts(dwhiteCodesNpub);
-  console.log(posts);
 
-  const newPost = new LongformPost(dwhiteCodesNpub, 'Post content', undefined, 'Post title', 'Post summary');
-  const secretKey = nip19.decode(targetNsec).data as string;
+  const loadPostsExample = async () => {
+    const posts = await nostrClient.getLongformPosts(dwhiteCodesNpub);
+    console.log(posts);
+  };
 
-  const results = await nostrClient.submitLongformPost(newPost, secretKey);
-  console.log('submit results', results);
+  const submitPostExample = async () => {
+    const newPost = LongformPost.fromNew(dwhiteCodesNpub, 'A real post', 'Yes, an actual post', 'This time, every bit of the post is real and is definitely not just a test');
+    const secretKey = nip19.decode(targetNsec).data as string;
+    const results = await nostrClient.submitLongformPost(newPost, secretKey);
+    console.log('submit results', results);
+  };
 
   // Upgrade from HTTP to HTTPS
   app.enable('trust proxy');
