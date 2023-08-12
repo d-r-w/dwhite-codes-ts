@@ -22,6 +22,7 @@ import NostrClient from './nostr/NostrClient';
 import npub from './nostr/npub';
 import LongformPost from './nostr/LongformPost';
 import { nip19 } from 'nostr-tools';
+import { PostFeed } from './PostFeed';
 
 (async () => {
   const app = express();
@@ -31,10 +32,7 @@ import { nip19 } from 'nostr-tools';
   const dwhiteCodesNpub = new npub(targetNpub);
   const dwhiteCodesSecretKey = nip19.decode(targetNsec).data as string;
 
-  const loadPostsExample = async () => {
-    const posts = await nostrClient.getLongformPosts(dwhiteCodesNpub);
-    console.log(posts);
-  };
+  const postFeed = await PostFeed.initialize(nostrClient, dwhiteCodesNpub);
 
   const submitPostExample = async () => {
     const newPost = LongformPost.fromNew(dwhiteCodesNpub, 'A real post', 'Yes, an actual post', 'This time, every bit of the post is real and is definitely not just a test');
@@ -49,8 +47,10 @@ import { nip19 } from 'nostr-tools';
   };
 
   // Upgrade from HTTP to HTTPS
-  app.enable('trust proxy');
-  app.use('/', (req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
+  if(!process.env.DISABLE_HTTPS) {
+    app.enable('trust proxy');
+    app.use('/', (req, res, next) => req.secure ? next() : res.redirect(`https://${req.headers.host}${req.url}`));
+  }
 
   app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -63,6 +63,10 @@ import { nip19 } from 'nostr-tools';
         dwhite: 'd90d948824c4cdbaa5f36dbd98068f3edef18c4665e26ad626ecac34105e3b02'
       }
     });
+  });
+
+  app.get('/posts.json', (req, res) => {
+    res.json(postFeed.getPostFeedJSON());
   });
 
   app.use('/', express.static('static', { index: 'index.html' }));

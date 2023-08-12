@@ -11,15 +11,17 @@ class LongformPost {
   public readonly tags: string[][];
   public readonly unsignedEvent: UnsignedEvent;
   public readonly summary: string|undefined;
+  public readonly identifier: string;
 
   private constructor(publisher: npub, content: string, publishedAt: number|null = Math.floor(Date.now() / 1000), title: string = 'Untitled Post', summary?: string, postID?: string|null) {
     this.publisher = publisher;
     this.title = title;
     this.content = content;
     this.publishedAt = publishedAt ?? Math.floor(Date.now() / 1000);
+    this.identifier = postID ?? String(Date.now());
     this.tags = [
       ['title', title],
-      ['d', postID ?? String(Date.now())],
+      ['d', this.identifier],
       ['published_at', String(this.publishedAt)]
     ];
     if(summary) {
@@ -53,6 +55,19 @@ class LongformPost {
 
   public static fromEdit(postID: string, publisher: npub, title: string, summary: string, content: string) {
     return new LongformPost(publisher, content, null, title, summary, postID);
+  }
+
+  public static getLatestVersionsOnly(posts: LongformPost[]) {
+    const uniquePosts = new Map<string, LongformPost>();
+
+    posts.forEach(post => {
+      const existingVersion = uniquePosts.get(post.identifier);
+      if((existingVersion?.publishedAt ?? 0) < post.publishedAt) {
+        uniquePosts.set(post.identifier, post);
+      }
+    });
+
+    return Array.from(uniquePosts.values());
   }
 }
 

@@ -28,8 +28,9 @@ class NostrClient {
     try {
       const public_key_hex = nip19.decode(publisher.toString()).data.toString();
       const events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.Article], limit: 15}]);
+      const posts = events.map(event => LongformPost.fromEvent(event));
       
-      return events.map(event => LongformPost.fromEvent(event));
+      return LongformPost.getLatestVersionsOnly(posts);
     }
     catch(error) {
       console.error(error);
