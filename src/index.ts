@@ -32,7 +32,7 @@ import { PostFeed } from './PostFeed';
   const dwhiteCodesNpub = new npub(targetNpub);
   const dwhiteCodesSecretKey = nip19.decode(targetNsec).data as string;
 
-  const postFeed = await PostFeed.initialize(nostrClient, dwhiteCodesNpub);
+  const postFeed = await PostFeed.initialize(nostrClient, dwhiteCodesNpub, 15);
 
   const submitPostExample = async () => {
     const newPost = LongformPost.fromNew(dwhiteCodesNpub, 'A real post', 'Yes, an actual post', 'This time, every bit of the post is real and is definitely not just a test');

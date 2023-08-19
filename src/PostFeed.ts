@@ -8,12 +8,14 @@ export class PostFeed {
 
   private readonly fetchTimeCooldownMS = 60000 * 5; // No sense in checking for posts more often than is necessary
   private lastFetchTimestamp: number = 0;
+  private readonly limit;
   
   private readonly nostrClient;
   private readonly publisher;
-  private constructor(nostrClient: NostrClient, publisher: npub) {
+  private constructor(nostrClient: NostrClient, publisher: npub, limit = 15) {
     this.nostrClient = nostrClient;
     this.publisher = publisher;
+    this.limit = limit;
   }
   
   private shouldFetchPosts(): boolean {
@@ -26,7 +28,7 @@ export class PostFeed {
     }
 
     try {
-      this.posts = (await this.nostrClient.getLongformPosts(this.publisher))
+      this.posts = (await this.nostrClient.getLongformPosts(this.publisher, this.limit))
         .sort((post1, post2) => post2.publishedAt - post1.publishedAt);
 
       this.lastFetchTimestamp = Date.now();
@@ -55,9 +57,9 @@ export class PostFeed {
     return { posts: postsJSON };
   }
 
-  public static async initialize(nostrClient: NostrClient, publisher: npub) {
+  public static async initialize(nostrClient: NostrClient, publisher: npub, limit: number) {
     console.debug('Initializing post feed..');
-    const postFeed = new PostFeed(nostrClient, publisher);
+    const postFeed = new PostFeed(nostrClient, publisher, limit);
     await postFeed.fetchPosts();
     console.debug('Post feed initialized.');
 

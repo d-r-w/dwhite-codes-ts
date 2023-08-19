@@ -24,10 +24,10 @@ class NostrClient {
     console.log(publishResults.toString());
   }
 
-  public async getLongformPosts(publisher: npub): Promise<LongformPost[]> {
+  public async getLongformPosts(publisher: npub, limit: number): Promise<LongformPost[]> {
     try {
       const public_key_hex = nip19.decode(publisher.toString()).data.toString();
-      const events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.Article], limit: 15}]);
+      const events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.Article], limit}]);
       const posts = events.map(event => LongformPost.fromEvent(event));
       
       return LongformPost.getLatestVersionsOnly(posts);
