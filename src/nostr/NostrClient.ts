@@ -3,7 +3,7 @@ import TargetRelayURIs from './TargetRelayURIs';
 import 'websocket-polyfill';
 import { SimplePool as SimpleRelayPool, nip19, Kind } from 'nostr-tools';
 import npub from './npub';
-import { getSignedEvent } from './Event';
+import { Tags, getSignedEvent } from './Event';
 import LongformPost from './LongformPost';
 
 class NostrClient {
@@ -27,10 +27,18 @@ class NostrClient {
   public async getLongformPosts(publisher: npub, limit: number): Promise<LongformPost[]> {
     try {
       const public_key_hex = nip19.decode(publisher.toString()).data.toString();
-      const events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.Article], limit}]);
-      const posts = events.map(event => LongformPost.fromEvent(event));
+      let longform_events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.Article], limit}]);
+
+      // Spec: "Clients MAY choose to fully hide any events that are referenced by valid deletion events"
+      // Because this applies to more than just Article events, this check may need to exist at a wider scope (for now it works)
+      const deletion_events = await this.targetRelayPool.list(this.relayWebsocketURIs, [{authors: [public_key_hex], kinds: [Kind.EventDeletion]}]);
+      longform_events = longform_events.filter(longform_event => {
+        return !deletion_events.some(deletion_event => new Tags(deletion_event.tags).getAllTagValues('e').has(longform_event.id));
+      });
+
+      const longform_posts = longform_events.map(event => LongformPost.fromEvent(event));
       
-      return LongformPost.getLatestVersionsOnly(posts);
+      return LongformPost.getLatestVersionsOnly(longform_posts);
     }
     catch(error) {
       console.error(error);

@@ -1,4 +1,4 @@
-import { TagMap } from './Event';
+import { Tags } from './Event';
 import npub from './npub';
 import { UnsignedEvent, Kind, nip19, Event } from 'nostr-tools';
 
@@ -41,10 +41,10 @@ class LongformPost {
   public static fromEvent(event: Event): LongformPost {
     const publisher = new npub(nip19.npubEncode(event.pubkey));
 
-    const tagMap = new TagMap(event.tags);
+    const tags = new Tags(event.tags);
 
-    const title = tagMap.get('title');
-    const summary = tagMap.get('summary');
+    const title = tags.getSingleTagValue('title');
+    const summary = tags.getSingleTagValue('summary');
 
     return new LongformPost(publisher, event.content, event.created_at, title, summary);
   }

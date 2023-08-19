@@ -1,6 +1,6 @@
 import { UnsignedEvent, Event, getEventHash, getSignature } from 'nostr-tools';
 
-const getSignedEvent = (unsignedEvent: UnsignedEvent, secretKey: string): Event => {
+export const getSignedEvent = (unsignedEvent: UnsignedEvent, secretKey: string): Event => {
   const eventId = getEventHash(unsignedEvent);
   const eventSig = getSignature(unsignedEvent, secretKey);
 
@@ -13,19 +13,27 @@ const getSignedEvent = (unsignedEvent: UnsignedEvent, secretKey: string): Event 
   return signedEvent;
 };
 
-class TagMap extends Map<string, string> {
-  constructor(tags: string[][]) {
-    const m = new Map<string, string>();
+export class Tags {
 
+  private readonly tagMap = new Map<string, Set<string>>();
+
+  constructor(tags: string[][]) {
     tags.forEach(tagKVPair => {
       const key = tagKVPair[0];
-      const value = tagKVPair[1];
+      const value = tagKVPair[1]; // TODO Not sure how many (if any) tags use idx[2]+
 
-      m.set(key, value);
+      const targetSet = this.tagMap.get(key) ?? new Set();
+
+      targetSet.add(value);
+      this.tagMap.set(key, targetSet);
     });
-
-    super(m);
   }
-}
 
-export { getSignedEvent, TagMap};
+  public getAllTagValues(key: string): Set<string> {
+    return this.tagMap.get(key) ?? new Set<string>;
+  }
+
+  public getSingleTagValue(key: string): string {
+    return Array.from(this.getAllTagValues(key))[0];
+  }
+} 
